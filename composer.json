@@ -1,24 +1,26 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "magdicom/laravel-hooks",
+    "description": "A lightweight action hooks package for Laravel",
     "keywords": [
-        ":vendor_name",
+        "magdicom",
         "laravel",
-        ":package_slug"
+        "laravel-hooks",
+        "action-hooks"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/magdicom/laravel-hooks",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "Mohamed Magdi",
+            "email": "m@momagdi.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.0",
         "spatie/laravel-package-tools": "^1.9.2",
-        "illuminate/contracts": "^8.73"
+        "illuminate/contracts": "^8.73",
+        "magdicom/hooks": "^1.0"
     },
     "require-dev": {
         "nunomaduro/collision": "^5.10",
@@ -34,13 +36,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories"
+            "Magdicom\\Hooks\\": "src",
+            "Magdicom\\Hooks\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests"
+            "Magdicom\\Hooks\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -54,10 +56,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Magdicom\\Hooks\\HooksServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Hooks": "Magdicom\\Hooks\\Facades\\Hooks"
             }
         }
     },
