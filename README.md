@@ -7,7 +7,7 @@
  
 This is a laravel 8 [magdicom/hooks](https://github.com/magdicom/hooks) wrapper that lets easily use action hooks in your laravel project.
 
-
+<a name="installation"></a>
 ## Installation
 
 You can install the package via composer:
@@ -16,12 +16,13 @@ You can install the package via composer:
 composer require magdicom/laravel-hooks
 ```
 
+<a name="usage"></a>
 ## Usage
 
 To call any of the available method you can use the facade:
 
 ```php
-use Momagdi\LaravelHooks\Facade\Hooks;
+use Magdicom\LaravelHooks\Facade\Hooks;
 
 Hooks::register("HookName", function($vars){}, 1);
 ```
@@ -194,29 +195,34 @@ Hooks::setParameters(array $parameters): self
 Same as [`setParameter`](#methods-setparameter) but here it accepts a name, value pair array as its only argument.
 
 
-
+<a name="testing"></a>
 ## Testing
 
 ```bash
 composer test
 ```
 
+<a name="changelog"></a>
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
+<a name="contributing"></a>
 ## Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
+<a name="security"></a>
 ## Security Vulnerabilities
 
 Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
 
+<a name="credits"></a>
 ## Credits
 
 - [Mohamed Magdi](https://github.com/magdicom)
 
+<a name="license"></a>
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
