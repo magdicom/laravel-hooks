@@ -1,5 +1,5 @@
 <?php
 
-use Magdicom\Hooks\Tests\TestCase;
+use Magdicom\LaravelHooks\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
