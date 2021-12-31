@@ -1,6 +1,6 @@
 <?php
 
-use \Magdicom\LaravelHooks\Facades\Hooks;
+use Magdicom\LaravelHooks\Facades\Hooks;
 
 if (! function_exists('hooks')) {
     /**
