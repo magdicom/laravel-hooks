@@ -9,8 +9,11 @@ use Illuminate\Support\Facades\Facade;
  */
 class Hooks extends Facade
 {
-    protected static function getFacadeAccessor()
+    /**
+     * @return string
+     */
+    protected static function getFacadeAccessor(): string
     {
-        return 'hooks';
+        return \Magdicom\Hooks::class;
     }
 }
