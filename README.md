@@ -1,11 +1,8 @@
 # A lightweight action hooks package for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/magdicom/laravel-hooks/run-tests?label=tests)](https://github.com/magdicom/laravel-hooks/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/magdicom/laravel-hooks/Check%20&%20fix%20styling?label=code%20style)](https://github.com/magdicom/laravel-hooks/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
  
-This is a laravel 8 [magdicom/hooks](https://github.com/magdicom/hooks) wrapper that lets easily use action hooks in your laravel project.
+This is a laravel 9 [magdicom/hooks](https://github.com/magdicom/hooks) wrapper that lets easily use action hooks in your laravel project.
 
 <a name="installation"></a>
 ## Installation
