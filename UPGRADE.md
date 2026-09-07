@@ -17,10 +17,10 @@ Laravel 9, 10, and 11 support has been removed from the version-2 branch.
 Install the beta release:
 
 ```bash
-composer require magdicom/laravel-hooks:"^2.0@beta"
+composer require magdicom/laravel-hooks:"^2.0@beta" magdicom/hooks:"^2.0@beta"
 ```
 
-Composer installs the compatible `magdicom/hooks` version-2 beta as a transitive dependency.
+The core package is listed explicitly because beta consumers must permit both prerelease packages. Composer's dependency-level stability flags do not override the root project's default stable policy. Do not change your application's global `minimum-stability` setting for this package.
 
 ## Choose The Hook Type
 
