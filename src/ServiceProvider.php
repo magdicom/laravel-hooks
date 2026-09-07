@@ -1,16 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Magdicom\LaravelHooks;
 
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Magdicom\Hooks;
+use Magdicom\Resolver;
 
 class ServiceProvider extends LaravelServiceProvider
 {
-    public function register()
+    public function register(): void
     {
-        $this->app->bind('hooks', function () {
-            return new Hooks();
+        $this->app->singleton(LaravelResolver::class, static function (Container $app): LaravelResolver {
+            return new LaravelResolver($app);
         });
+
+        $this->app->alias(LaravelResolver::class, Resolver::class);
+
+        $this->app->singleton(Hooks::class, static function (Container $app): Hooks {
+            return new Hooks($app->make(Resolver::class));
+        });
+
+        $this->app->alias(Hooks::class, 'hooks');
     }
 }

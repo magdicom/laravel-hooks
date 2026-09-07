@@ -1,0 +1,151 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress --prefer-stable
+
+      - name: Run tests
+        run: composer test
+
+      - name: Run static analysis
+        run: composer analyse
+
+      - name: Check formatting
+        run: composer format -- --dry-run --diff
+
+  tests:
+    name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }} / ${{ matrix.dependencies }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.2'
+            laravel: '^12.0'
+            testbench: '^10.0'
+            pest: '^3.8'
+            pest_plugin_laravel: '^3.2'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.3'
+            laravel: '^12.0'
+            testbench: '^10.0'
+            pest: '^3.8'
+            pest_plugin_laravel: '^3.2'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.4'
+            laravel: '^12.0'
+            testbench: '^10.0'
+            pest: '^3.8'
+            pest_plugin_laravel: '^3.2'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.3'
+            laravel: '^13.0'
+            testbench: '^11.0'
+            pest: '^4.0'
+            pest_plugin_laravel: '^4.0'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.4'
+            laravel: '^13.0'
+            testbench: '^11.0'
+            pest: '^4.0'
+            pest_plugin_laravel: '^4.0'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.5'
+            laravel: '^13.0'
+            testbench: '^11.0'
+            pest: '^4.0'
+            pest_plugin_laravel: '^4.0'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: ubuntu-latest
+          - php: '8.2'
+            laravel: '^12.0'
+            testbench: '^10.0'
+            pest: '^3.8'
+            pest_plugin_laravel: '^3.2'
+            dependencies: prefer-lowest
+            composer_flags: --prefer-lowest --prefer-stable
+            os: ubuntu-latest
+          - php: '8.3'
+            laravel: '^13.0'
+            testbench: '^11.0'
+            pest: '^4.0'
+            pest_plugin_laravel: '^4.0'
+            dependencies: prefer-stable
+            composer_flags: --prefer-stable
+            os: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Select Laravel compatibility target
+        run: >
+          composer require
+          "laravel/framework:${{ matrix.laravel }}"
+          "orchestra/testbench:${{ matrix.testbench }}"
+          "pestphp/pest:${{ matrix.pest }}"
+          "pestphp/pest-plugin-laravel:${{ matrix.pest_plugin_laravel }}"
+          --dev
+          --no-interaction
+          --no-update
+
+      - name: Install dependencies
+        run: composer update ${{ matrix.composer_flags }} --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: composer test

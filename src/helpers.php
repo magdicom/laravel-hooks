@@ -1,16 +1,18 @@
 <?php
 
-use Magdicom\LaravelHooks\Facades\Hooks;
+declare(strict_types=1);
+
+use Magdicom\Hooks;
 
 if (! function_exists('hooks')) {
-    /**
-     * Wrapper for Laravel Hooks Package
-     *
-     * @param  array|null  $parameters
-     * @return \Magdicom\LaravelHooks\Facades\Hooks
-     */
-    function hooks($parameters = [])
+    function hooks(): Hooks
     {
-        return Hooks::setParameters($parameters);
+        if (func_num_args() > 0) {
+            throw new InvalidArgumentException(
+                'hooks() no longer accepts global parameters. Pass invocation arguments to doAction(), applyFilters(), collect(), process(), or render().',
+            );
+        }
+
+        return app(Hooks::class);
     }
 }

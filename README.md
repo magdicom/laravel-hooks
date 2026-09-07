@@ -1,225 +1,282 @@
-# A lightweight action hooks package for Laravel
+# Laravel Hooks
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
- 
-This is a laravel 9 [magdicom/hooks](https://github.com/magdicom/hooks) wrapper that lets easily use action hooks in your laravel project.
+[![Total Downloads](https://img.shields.io/packagist/dt/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
 
-<a name="installation"></a>
+`magdicom/laravel-hooks` is the Laravel integration layer for [`magdicom/hooks`](https://github.com/magdicom/hooks).
+
+It keeps the framework-specific work small:
+
+- registers one shared `Magdicom\Hooks` instance in Laravel's service container;
+- resolves non-static class callbacks, class-name processors, and class-name renderers through Laravel's container;
+- provides the `Hooks` facade;
+- provides the `hooks()` helper.
+
+Core hook behavior belongs to `magdicom/hooks`: actions, filters, collectors, priorities, registration handles, inspection, removal, result processors, and renderers.
+
+Version 2 is intentionally breaking. If you are upgrading from `1.x`, read [UPGRADE.md](UPGRADE.md).
+
+## Requirements
+
+- PHP `^8.2`
+- Laravel `^12.0` or `^13.0`
+- `magdicom/hooks` `^2.0.0-beta.1`
+
+Laravel 9, 10, and 11 are not supported by this version-2 branch.
+
 ## Installation
 
-You can install the package via composer:
+The Laravel wrapper beta has not been tagged yet. To test the current development branch, require the wrapper branch and the core beta explicitly:
 
 ```bash
-composer require magdicom/laravel-hooks
+composer require magdicom/laravel-hooks:"2.0.x-dev" magdicom/hooks:"^2.0@beta"
 ```
 
-<a name="usage"></a>
-## Usage
+After a wrapper beta is tagged, the intended beta constraint will be:
 
-To call any of the available method you can use the facade:
+```bash
+composer require magdicom/laravel-hooks:"^2.0@beta"
+```
+
+Laravel package auto-discovery registers the service provider and facade alias automatically.
+
+Manual registration is only needed if your application disables package discovery:
 
 ```php
-use Magdicom\LaravelHooks\Facade\Hooks;
+'providers' => [
+    Magdicom\LaravelHooks\ServiceProvider::class,
+],
 
-Hooks::register("HookName", function($vars){}, 1);
+'aliases' => [
+    'Hooks' => Magdicom\LaravelHooks\Facades\Hooks::class,
+],
 ```
 
-or use the helper function as below:
+## Access
+
+All Laravel access paths resolve the same application singleton:
+
 ```php
-hooks()->register("HookName", function($vars){}, 1);
+use Magdicom\Hooks as CoreHooks;
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+app(CoreHooks::class);
+app('hooks');
+hooks();
+Hooks::getFacadeRoot();
 ```
 
-<a name="quick-start"></a>
-### Quick Start
+Registrations added through one path are visible through every other path.
+
+## Facade
+
 ```php
-# Register our functions
-Hooks::register("Greetings", function($vars){
-    return "Hi There,";
-}, 1);
+use Magdicom\LaravelHooks\Facades\Hooks;
 
-Hooks::register("Greetings", function($vars){
-    return "This is the second line of greetings!";
-}, 2);
-
-# Later we run it
-echo Hooks::all("Greetings")->toString("<br>");
-```
-The above example will output
-```text
-Hi There,
-This is the second line of greetings!
-```
-
-<a name="output"></a>
-### Output
-When you call any of [`all`](#methods-all), [`first`](#methods-first) or [`last`](#methods-last) methods, the corresponding hook functions will be executed and their output will be saved in a special property to be exported later using [`toString`](#methods-tostring) or [`toArray`](#methods-toarray) methods.
-
-<a name="callbacks"></a>
-### Callbacks
-
-<a name="callbacks-closure"></a>
-#### Closure
-```php
-Hooks::register("Callback", function($vars) {
-    return "Closure";
+Hooks::addAction('orders.created', function (int $orderId): void {
+    // side effect
 });
+
+Hooks::doAction('orders.created', $orderId);
 ```
 
-<a name="callbacks-function-name"></a>
-#### Function Name
-```php
-function simple_function_name($vars){
-    //
-}
+The facade resolves the core `Magdicom\Hooks` binding. Its public API is the core package API.
 
-Hooks::register("Callback", "simple_function_name");
+## Helper
+
+The `hooks()` helper returns the shared core instance:
+
+```php
+hooks()->addFilter('orders.reference', fn (string $value): string => strtoupper($value));
+
+$reference = hooks()->applyFilters('orders.reference', 'draft-100');
 ```
 
-<a name="callbacks-object-method"></a>
-#### Object Method
+The helper does not accept parameters and does not maintain global parameter state. Invocation arguments belong on the core dispatch methods:
+
 ```php
-class FooBar {
-    public function methodName($vars){
-        //
+hooks()->doAction('endpoint', $argument);
+hooks()->applyFilters('endpoint', $value, $argument);
+hooks()->collect('endpoint', $argument);
+```
+
+Old version-1 calls such as `hooks($parameters)` fail with an informative exception.
+
+## Actions
+
+Actions are ordered side-effect hooks. Callback return values are ignored.
+
+```php
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+Hooks::addAction('invoice.paid', function (int $invoiceId, string $source): void {
+    activity()->log("Invoice {$invoiceId} was paid from {$source}.");
+}, priority: 10);
+
+Hooks::doAction('invoice.paid', $invoiceId, 'checkout');
+```
+
+## Filters
+
+Filters transform a value sequentially. Each listener receives the current value first, followed by explicit invocation arguments.
+
+```php
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+Hooks::addFilter('invoice.label', fn (string $label): string => trim($label), priority: 5);
+Hooks::addFilter('invoice.label', fn (string $label, string $suffix): string => $label . $suffix, priority: 20);
+
+$label = Hooks::applyFilters('invoice.label', ' Draft ', ' #100');
+```
+
+If no filter listeners exist, the original value is returned.
+
+## Collectors
+
+Collectors gather one raw result from each listener.
+
+```php
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+Hooks::addCollector('dashboard.widgets', fn (): array => ['name' => 'Revenue'], priority: 10);
+Hooks::addCollector('dashboard.widgets', fn (): array => ['name' => 'Churn'], priority: 20);
+
+$widgets = Hooks::collect('dashboard.widgets');
+```
+
+If no collector listeners exist, `collect()` returns an empty array.
+
+## Dependency-Injected Class Callbacks
+
+Non-static class callbacks resolve through Laravel's container, so constructor injection and bindings work normally.
+
+```php
+use App\Services\AuditLog;
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+final readonly class RecordInvoicePayment
+{
+    public function __construct(
+        private AuditLog $auditLog,
+    ) {}
+
+    public function handle(int $invoiceId): void
+    {
+        $this->auditLog->record('invoice.paid', $invoiceId);
     }
 }
 
-$object = new FooBar;
-
-Hooks::register("Callback", [$object, 'methodName']);
+Hooks::addAction('invoice.paid', [RecordInvoicePayment::class, 'handle']);
+Hooks::doAction('invoice.paid', $invoiceId);
 ```
-or
+
+Static callable methods follow the core package's callable behavior and do not require unnecessary container instance resolution.
+
+## Processors
+
+Processors finalize collector results while preserving raw `collect()` access.
+
 ```php
-Hooks::register("Callback", [(new FooBar), 'methodName']);
+use Magdicom\LaravelHooks\Facades\Hooks;
+use Magdicom\Processor\LastProcessor;
+
+Hooks::addCollector('invoice.status', fn (): string => 'draft');
+Hooks::addCollector('invoice.status', fn (): string => 'paid');
+
+Hooks::setProcessor('invoice.status', new LastProcessor());
+
+$raw = Hooks::collect('invoice.status'); // ['draft', 'paid']
+$status = Hooks::process('invoice.status'); // 'paid'
 ```
 
-<a name="callbacks-static-method"></a>
-#### Static Method
+Class-name processors resolve through Laravel's container and must implement `Magdicom\ResultProcessor`.
+
+## Renderers
+
+Renderers are string-producing collector processors.
+
 ```php
-class FooBar {
-    public static function staticMethodName($vars){
-        //
-    }
-}
+use Magdicom\LaravelHooks\Facades\Hooks;
+use Magdicom\Processor\ConcatenateRenderer;
 
-Hooks::register("Callback", ['FooBar', 'staticMethodName']);
+Hooks::addCollector('layout.footer', fn (): string => '<span>Terms</span>');
+Hooks::addCollector('layout.footer', fn (): string => '<span>Privacy</span>');
+
+Hooks::setRenderer('layout.footer', new ConcatenateRenderer("\n"));
+
+$html = Hooks::render('layout.footer');
 ```
-in case this is not a static method, an object will be created and the provided method will be called.
 
-<a name="parameters"></a>
-### Parameters
-With each of hook callback functions execution an array of parameters could be passed to it to help it perform the required action.
+Class-name renderers resolve through Laravel's container and must implement `Magdicom\Renderer`.
 
-Parameters split into two types:
-+ Global parameters will be available across all hook names and callbacks, and these can be defined using [`setParameter`](#methods-setparameter) and [`setParameters`](#methods-setparameters) methods.
-+ Scoped parameters which will be only available to the requested hook name, and could be provided as the second argument of [`all`](#methods-all), [`first`](#methods-first) and [`last`](#methods-last) methods.
+## Registration Handles
 
+Registration methods return `Magdicom\RegistrationHandle`.
 
-<a name="priority"></a>
-### Priority
-When you need to ensure that certain hook functions should be executed in sequence order, here it comes `$priority` which is the 3rd and last argument of [`register`](#methods-register) method.
-
-<a name="methods"></a>
-### Methods
-
-<a name="methods-register"></a>
-#### register
 ```php
-Hooks::register(string $hookName, array|callable $callback, ?int $priority): self
+use Magdicom\LaravelHooks\Facades\Hooks;
+
+$handle = Hooks::addAction('orders.created', $callback);
+
+Hooks::hasAction('orders.created', $callback);
+Hooks::count('orders.created');
+Hooks::actions('orders.created');
+
+$handle->remove();
 ```
-Register all your hook functions via this method:
 
-+ `$hookName` this can be anything you want, its like a group name where all other related action hook functions will be attached to.
-+ `$callback` only accepts [callable](https://www.php.net/manual/en/language.types.callable.php) functions.
-+ `$priority` (optional) used to sort callbacks before being executed.
+The facade and helper also expose type-aware removal and inspection methods such as `removeAction()`, `removeFilter()`, `removeCollector()`, `removeAllActions()`, `removeAllFilters()`, and `removeAllCollectors()`.
 
-<a name="methods-all"></a>
-#### all
-```php
-Hooks::all(string $hookName, ?array $parameters): self
-```
-Will execute all callback functions of the specified hook name, by default it will return the output as string, check [output](#output) section for more options.
-+ `$hookName` the hook name you want to execute its callback functions.
-+ `$parameters` optional key, value pair array that you want to provide for all callback functions related to the same hook name.
+## Singleton Lifecycle
 
-Please Note: parameters provided via this method will be available only in the scope of the specified hook name, to specify global parameters use [`setParameter`](#methods-setparameter), [`setParameters`](#methods-setparameters) methods instead.
+The registry is application-singleton state. Register hooks during application bootstrapping, package bootstrapping, or another predictable setup phase.
 
-<a name="methods-first"></a>
-#### first
-```php
-Hooks::first(string $hookName, ?array $parameters): self
-```
-Similar to [`all`](#methods-all) method in every aspect with the exception that only the first callback (after sorting) will be executed.
+In long-running Laravel processes such as queue workers, Octane workers, or daemons, runtime registrations remain on the singleton until the application instance is refreshed or the registrations are explicitly removed. Prefer stable boot-time registrations in those environments.
 
-<a name="methods-last"></a>
-#### last
-```php
-Hooks::last(string $hookName, ?array $parameters): self
-```
-Similar to [`all`](#methods-all) method in every aspect with the exception that only the last callback (after sorting) will be executed.
+## Events, Pipeline, Or Hooks
 
-<a name="methods-toarray"></a>
-#### toArray
-```php
-Hooks::toArray(): array
-```
-Will return output of the last executed hook name functions as an array.
+Laravel Events are the better default for domain events, queued listeners, broadcasting, event discovery, observers, and application workflows that should integrate with Laravel's event ecosystem.
 
-<a name="methods-tostring"></a>
-#### toString
-```php
-Hooks::toString(?string $separator): string
-```
-Will return output of the last executed hook name functions as one string.
-+ `$separator` could be used to separate the output as you need (e.g: "\n", "&lt;br&gt;").
+Laravel Pipeline is a better fit when one value must pass through a known middleware-like sequence.
 
-<a name="methods-setparameter"></a>
-#### setParameter
-```php
-Hooks::setParameter(string $name, mixed $value): self
-```
-Use this method to define a parameter that will be accessible from any hook function.
-+ `$name` name of the parameter.
-+ `$value` value of the parameter could be string, array or even an object.
+Use this package when you need named extension points where packages or application modules can register synchronous actions, ordered filters, independent collectors, or collector result processors without introducing event classes or pipeline definitions.
 
-P.S: if the parameter already defined then its old value will be replaced by the value provided here.
+## Core Package
 
-<a name="methods-setparameters"></a>
-#### setParameters
-```php
-Hooks::setParameters(array $parameters): self
-```
-Same as [`setParameter`](#methods-setparameter) but here it accepts a name, value pair array as its only argument.
+Read the core package documentation for complete API details:
 
+- [`magdicom/hooks`](https://github.com/magdicom/hooks)
+- [`magdicom/hooks` v2.0.0-beta.1 release](https://github.com/magdicom/hooks/releases/tag/v2.0.0-beta.1)
 
-<a name="testing"></a>
 ## Testing
 
 ```bash
+composer validate --strict
 composer test
+composer analyse
+composer format -- --dry-run --diff
 ```
 
-<a name="changelog"></a>
-## Changelog
+Manual smoke test:
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+1. Install this branch in a Laravel 12 or 13 application.
+2. Register an action, filter, and collector during application boot.
+3. Resolve `app(\Magdicom\Hooks::class)`, `app('hooks')`, `hooks()`, and `Hooks::getFacadeRoot()`.
+4. Confirm all four access paths share the same registrations.
+5. Register a non-static class callback with constructor dependencies and confirm Laravel injects them.
 
-<a name="contributing"></a>
 ## Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](.github/CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
 
-<a name="security"></a>
 ## Security Vulnerabilities
 
 Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
 
-<a name="credits"></a>
 ## Credits
 
 - [Mohamed Magdi](https://github.com/magdicom)
 
-<a name="license"></a>
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

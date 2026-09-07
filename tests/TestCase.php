@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Magdicom\LaravelHooks\Tests;
 
 use Magdicom\LaravelHooks\ServiceProvider;
@@ -12,14 +14,19 @@ class TestCase extends Orchestra
         parent::setUp();
     }
 
-    protected function getPackageProviders($app)
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     * @return list<class-string<\Illuminate\Support\ServiceProvider>>
+     */
+    protected function getPackageProviders($app): array
     {
         return [
             ServiceProvider::class,
         ];
     }
 
-    public function getEnvironmentSetUp($app)
-    {
-    }
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     */
+    public function getEnvironmentSetUp($app): void {}
 }

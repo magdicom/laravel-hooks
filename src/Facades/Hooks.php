@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Magdicom\LaravelHooks\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Magdicom\Hooks
+ * @mixin \Magdicom\Hooks
  */
 class Hooks extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getFacadeAccessor(): string
     {
         return \Magdicom\Hooks::class;

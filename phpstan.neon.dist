@@ -1,12 +1,11 @@
 includes:
-    - phpstan-baseline.neon
+    - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 4
+    level: max
     paths:
         - src
+        - tests
     tmpDir: build/phpstan
-    checkOctaneCompatibility: true
-    checkModelProperties: true
-    checkMissingIterableValueType: false
-
+    bootstrapFiles:
+        - vendor/autoload.php
