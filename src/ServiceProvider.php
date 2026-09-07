@@ -3,7 +3,6 @@
 namespace Magdicom\LaravelHooks;
 
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
-
 use Magdicom\Hooks;
 
 class ServiceProvider extends LaravelServiceProvider
