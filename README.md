@@ -27,17 +27,13 @@ Laravel 9, 10, and 11 are not supported by this version-2 branch.
 
 ## Installation
 
-The Laravel wrapper beta has not been tagged yet. To test the current development branch, require the wrapper branch and the core beta explicitly:
-
-```bash
-composer require magdicom/laravel-hooks:"2.0.x-dev" magdicom/hooks:"^2.0@beta"
-```
-
-After a wrapper beta is tagged, the intended beta constraint will be:
+Install the beta release:
 
 ```bash
 composer require magdicom/laravel-hooks:"^2.0@beta"
 ```
+
+Composer installs the compatible `magdicom/hooks` version-2 beta as a transitive dependency.
 
 Laravel package auto-discovery registers the service provider and facade alias automatically.
 
@@ -266,7 +262,7 @@ composer format -- --dry-run --diff
 
 Manual smoke test:
 
-1. Install this branch in a Laravel 12 or 13 application.
+1. Install this beta in a Laravel 12 or 13 application.
 2. Register an action, filter, and collector during application boot.
 3. Resolve `app(\Magdicom\Hooks::class)`, `app('hooks')`, `hooks()`, and `Hooks::getFacadeRoot()`.
 4. Confirm all four access paths share the same registrations.

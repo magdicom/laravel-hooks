@@ -2,13 +2,16 @@
 
 All notable changes to `laravel-hooks` will be documented in this file.
 
-## Unreleased
+## v2.0.0-beta.1 - 2026-09-07
+
+Version 2 is intentionally breaking. See [UPGRADE.md](UPGRADE.md) for migration guidance from `1.x`.
 
 ### Changed
 
-- Reworked the package for `magdicom/hooks` version 2 beta.
-- Raised requirements to PHP `^8.2` and Laravel `^12.0 || ^13.0`.
-- Registered one shared core `Magdicom\Hooks` singleton in Laravel's container.
+- Reworked the package as a clean Laravel wrapper around the published `magdicom/hooks` version-2 beta action, filter, and collector models.
+- Added support for collector processors and renderers through the core package API.
+- Added Laravel 12 and Laravel 13 support on PHP `^8.2`.
+- Registered one shared core `Magdicom\Hooks` singleton in Laravel's container, available through `Magdicom\Hooks::class`, `app('hooks')`, the `hooks()` helper, and the `Hooks` facade.
 - Updated the facade and helper to expose the core version-2 actions, filters, collectors, processors, renderers, registration, inspection, and removal APIs.
 - Added a Laravel-container-backed `Magdicom\Resolver` implementation for non-static class callbacks, class-name processors, and class-name renderers.
 - Bound `Magdicom\Resolver` as a replaceable singleton so applications can provide custom class-name resolution before the shared hooks instance is resolved.

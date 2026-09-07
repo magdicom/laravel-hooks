@@ -12,15 +12,15 @@ The Laravel wrapper now exposes the published `magdicom/hooks` version-2 API dir
 
 Laravel 9, 10, and 11 support has been removed from the version-2 branch.
 
-## Installation During Development
+## Installation
 
-The Laravel wrapper beta has not been tagged yet. To test the development branch, require the wrapper branch and the core beta explicitly:
+Install the beta release:
 
 ```bash
-composer require magdicom/laravel-hooks:"2.0.x-dev" magdicom/hooks:"^2.0@beta"
+composer require magdicom/laravel-hooks:"^2.0@beta"
 ```
 
-After a wrapper beta is tagged, use an explicit beta constraint instead.
+Composer installs the compatible `magdicom/hooks` version-2 beta as a transitive dependency.
 
 ## Choose The Hook Type
 
