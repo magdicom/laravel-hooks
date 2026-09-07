@@ -42,6 +42,37 @@ test('service provider registers resolver and shared hooks singleton access path
         ->and(hooksAlias()->actions('laravel.singleton'))->toHaveCount(1);
 });
 
+test('resolver contract can be overridden before hooks singleton is resolved', function (): void {
+    $resolver = new CustomResolver();
+    app()->instance(Resolver::class, $resolver);
+
+    $core = app(CoreHooks::class);
+
+    $core->addAction('laravel.custom-resolver-action', [CustomResolvedAction::class, 'handle']);
+
+    $events = new EventLog();
+    $core->doAction('laravel.custom-resolver-action', $events, 'action');
+
+    $core->addCollector('laravel.custom-resolver-processor', static fn(): string => 'value');
+    $core->setProcessor('laravel.custom-resolver-processor', CustomResolvedProcessor::class);
+
+    expect($events->all())->toBe(['custom:action'])
+        ->and($core->process('laravel.custom-resolver-processor'))->toBe('custom:value')
+        ->and($resolver->resolvedClassNames)->toBe([
+            CustomResolvedAction::class,
+            CustomResolvedProcessor::class,
+        ]);
+});
+
+test('laravel resolver rejects non object container resolutions', function (): void {
+    app()->bind(ScalarResolutionTarget::class, static fn(): string => 'not-an-object');
+
+    app(LaravelResolver::class)->resolve(ScalarResolutionTarget::class);
+})->throws(
+    RuntimeException::class,
+    'Laravel container resolved [ScalarResolutionTarget] to [string]; expected object.',
+);
+
 test('helper rejects legacy global parameters', function (): void {
     hooks(['legacy' => 'parameters']);
 })->throws(InvalidArgumentException::class, 'hooks() no longer accepts global parameters.');
@@ -240,6 +271,62 @@ final readonly class ContainerBackedRenderer implements Renderer
         }, $results);
     }
 }
+
+final class CustomResolver implements Resolver
+{
+    /**
+     * @var list<string>
+     */
+    public array $resolvedClassNames = [];
+
+    public function resolve(string $className): object
+    {
+        $this->resolvedClassNames[] = $className;
+
+        return match ($className) {
+            CustomResolvedAction::class => new CustomResolvedAction('custom'),
+            CustomResolvedProcessor::class => new CustomResolvedProcessor('custom'),
+            default => throw new InvalidArgumentException('Unexpected resolver class: ' . $className),
+        };
+    }
+}
+
+final readonly class CustomResolvedAction
+{
+    public function __construct(
+        private string $prefix,
+    ) {}
+
+    public function handle(EventLog $events, string $event): void
+    {
+        $events->push($this->prefix . ':' . $event);
+    }
+}
+
+/**
+ * @implements ResultProcessor<mixed, string>
+ */
+final readonly class CustomResolvedProcessor implements ResultProcessor
+{
+    public function __construct(
+        private string $prefix,
+    ) {}
+
+    /**
+     * @param list<mixed> $results
+     */
+    public function process(array $results, ProcessingContext $context): string
+    {
+        $result = $results[0] ?? null;
+        if (! is_string($result)) {
+            throw new InvalidArgumentException('Unexpected processor result.');
+        }
+
+        return $this->prefix . ':' . $result;
+    }
+}
+
+final class ScalarResolutionTarget {}
 
 final class StaticOnlyAction
 {

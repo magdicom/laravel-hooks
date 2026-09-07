@@ -25,6 +25,7 @@ This package is the Laravel integration layer for `magdicom/hooks`. Keep it thin
 ## Container Integration
 
 - Register one shared `Magdicom\Hooks` instance in Laravel's container.
+- Bind `Magdicom\Resolver` as a real singleton binding, not as an alias, so applications can replace it before `Magdicom\Hooks` is resolved.
 - The class binding, `hooks` string alias, facade root, and `hooks()` helper must resolve the same object.
 - Resolve class-name callbacks, processors, and renderers through Laravel's container via the Laravel resolver.
 - Do not fall back to `new $className` inside the Laravel resolver.

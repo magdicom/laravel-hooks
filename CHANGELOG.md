@@ -11,6 +11,7 @@ All notable changes to `laravel-hooks` will be documented in this file.
 - Registered one shared core `Magdicom\Hooks` singleton in Laravel's container.
 - Updated the facade and helper to expose the core version-2 actions, filters, collectors, processors, renderers, registration, inspection, and removal APIs.
 - Added a Laravel-container-backed `Magdicom\Resolver` implementation for non-static class callbacks, class-name processors, and class-name renderers.
+- Bound `Magdicom\Resolver` as a replaceable singleton so applications can provide custom class-name resolution before the shared hooks instance is resolved.
 - Replaced the version-1 test suite with Laravel integration coverage for the wrapper boundary.
 - Modernized Composer metadata, static analysis, formatting, and CI checks.
 

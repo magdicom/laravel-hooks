@@ -197,6 +197,8 @@ hooks();
 
 Registrations added through any of these paths are visible through the others.
 
+The wrapper binds `Magdicom\Resolver` to `Magdicom\LaravelHooks\LaravelResolver` as a replaceable singleton. If an application or package needs custom class-name resolution, rebind `Magdicom\Resolver` before `Magdicom\Hooks` is first resolved.
+
 ## Dependency-Injected Class Callbacks
 
 Non-static class callbacks now resolve through Laravel's container:

@@ -17,7 +17,9 @@ class ServiceProvider extends LaravelServiceProvider
             return new LaravelResolver($app);
         });
 
-        $this->app->alias(LaravelResolver::class, Resolver::class);
+        $this->app->singleton(Resolver::class, static function (Container $app): Resolver {
+            return $app->make(LaravelResolver::class);
+        });
 
         $this->app->singleton(Hooks::class, static function (Container $app): Hooks {
             return new Hooks($app->make(Resolver::class));

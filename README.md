@@ -2,6 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
 [![Total Downloads](https://img.shields.io/packagist/dt/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
+[![CI](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml/badge.svg?branch=2.0)](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml?query=branch%3A2.0)
 
 `magdicom/laravel-hooks` is the Laravel integration layer for [`magdicom/hooks`](https://github.com/magdicom/hooks).
 
@@ -67,6 +68,8 @@ Hooks::getFacadeRoot();
 ```
 
 Registrations added through one path are visible through every other path.
+
+The package also binds `Magdicom\Resolver` to `Magdicom\LaravelHooks\LaravelResolver` as a singleton. Applications and packages may replace the `Magdicom\Resolver` binding before `Magdicom\Hooks` is first resolved when they need custom class-name resolution behavior.
 
 ## Facade
 
@@ -191,6 +194,8 @@ $status = Hooks::process('invoice.status'); // 'paid'
 
 Class-name processors resolve through Laravel's container and must implement `Magdicom\ResultProcessor`.
 
+If you replace the `Magdicom\Resolver` binding before the shared hooks instance is resolved, class-name processors use that custom resolver.
+
 ## Renderers
 
 Renderers are string-producing collector processors.
@@ -208,6 +213,8 @@ $html = Hooks::render('layout.footer');
 ```
 
 Class-name renderers resolve through Laravel's container and must implement `Magdicom\Renderer`.
+
+If you replace the `Magdicom\Resolver` binding before the shared hooks instance is resolved, class-name renderers use that custom resolver.
 
 ## Registration Handles
 
