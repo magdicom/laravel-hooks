@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-hooks` will be documented in this file.
 
+## v2.0.0-beta.2 - 2026-09-08
+
+This prerelease corrects the beta installation and packaging guidance. No runtime API or behavior changed from `v2.0.0-beta.1`.
+
+Because both the Laravel wrapper and core package are prereleases, beta consumers must explicitly permit both packages:
+
+```bash
+composer require magdicom/laravel-hooks:"^2.0@beta" magdicom/hooks:"^2.0@beta"
+```
+
+Composer's dependency-level stability flags do not override the consumer application's default stable policy. There is no need to change the application's global `minimum-stability` setting.
+
 ## v2.0.0-beta.1 - 2026-09-07
 
 Version 2 is intentionally breaking. See [UPGRADE.md](UPGRADE.md) for migration guidance from `1.x`.
