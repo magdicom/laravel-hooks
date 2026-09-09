@@ -4,14 +4,11 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
 [![CI](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml/badge.svg?branch=2.0)](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml?query=branch%3A2.0)
 
-`magdicom/laravel-hooks` is the Laravel integration layer for [`magdicom/hooks`](https://github.com/magdicom/hooks).
+`magdicom/laravel-hooks` is the first-class Laravel integration for the framework-independent [`magdicom/hooks`](https://github.com/magdicom/hooks) core.
 
-It keeps the framework-specific work small:
+Use `hooks()` as the concise application-level access method. Inside services, jobs, and commands, constructor injection of `Magdicom\Hooks` is recommended. The `Hooks` facade is an optional alternative when facade-style access fits the calling code.
 
-- registers one shared `Magdicom\Hooks` instance in Laravel's service container;
-- resolves non-static class callbacks, class-name processors, and class-name renderers through Laravel's container;
-- provides the `Hooks` facade;
-- provides the `hooks()` helper.
+Laravel's container resolves supported non-static class callbacks, class-name processors, and class-name renderers, including their constructor dependencies. Complete Laravel integration documentation is available at [hooks.momagdi.com/docs/2.x/laravel/](https://hooks.momagdi.com/docs/2.x/laravel/).
 
 Core hook behavior belongs to `magdicom/hooks`: actions, filters, collectors, priorities, registration handles, inspection, removal, result processors, and renderers.
 

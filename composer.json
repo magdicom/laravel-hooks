@@ -1,6 +1,6 @@
 {
     "name": "magdicom/laravel-hooks",
-    "description": "Laravel integration for actions, filters, collectors, processors, and renderers powered by magdicom/hooks.",
+    "description": "Laravel integration for Hooks with container resolution, dependency injection, a facade, and the hooks() helper.",
     "keywords": [
         "magdicom",
         "laravel",
