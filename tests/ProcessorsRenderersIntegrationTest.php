@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use Magdicom\Exceptions\MissingProcessorException;
+use Magdicom\Exceptions\MissingRendererException;
 use Magdicom\LaravelHooks\Facades\Hooks;
-use Magdicom\MissingProcessorException;
-use Magdicom\MissingRendererException;
 use Magdicom\ProcessingContext;
-use Magdicom\Processor\ConcatenateRenderer;
-use Magdicom\Processor\LastProcessor;
+use Magdicom\Processors\ConcatenateRenderer;
+use Magdicom\Processors\LastProcessor;
 use Magdicom\Renderer;
 use Magdicom\ResultProcessor;
 
@@ -49,6 +49,57 @@ test('class name processors and renderers resolve constructor dependencies throu
 
     expect(Hooks::process('processors.class-name', 'processed'))->toBe('container:processors.class-name:raw-processed')
         ->and(hooks()->render('renderers.class-name', 'rendered'))->toBe('container:renderers.class-name:raw-rendered');
+});
+
+test('one-off processors and renderers resolve through helper and facade without changing persistent configuration', function (): void {
+    app()->instance(ProcessorRendererDependency::class, new ProcessorRendererDependency('container'));
+
+    hooks()->addCollector('invoice.status', static function (mixed ...$arguments): string {
+        [$suffix] = $arguments;
+        if (! is_string($suffix)) {
+            throw new InvalidArgumentException('Unexpected processor argument.');
+        }
+
+        return 'raw-' . $suffix;
+    });
+    hooks()->addCollector('invoice.html', static function (mixed ...$arguments): string {
+        [$suffix] = $arguments;
+        if (! is_string($suffix)) {
+            throw new InvalidArgumentException('Unexpected renderer argument.');
+        }
+
+        return 'html-' . $suffix;
+    });
+
+    $persistentProcessor = new LastProcessor();
+    $persistentRenderer = new ConcatenateRenderer('|');
+
+    Hooks::setProcessor('invoice.status', $persistentProcessor);
+    Hooks::setRenderer('invoice.html', $persistentRenderer);
+
+    expect(hooks()->processWith('invoice.status', ContainerProcessor::class, 'paid'))
+        ->toBe('container:invoice.status:raw-paid')
+        ->and(Hooks::renderWith('invoice.html', ContainerRenderer::class, 'footer'))
+        ->toBe('container:invoice.html:html-footer')
+        ->and(hooks()->processor('invoice.status'))->toBe($persistentProcessor)
+        ->and(hooks()->processor('invoice.html'))->toBe($persistentRenderer)
+        ->and(hooks()->process('invoice.status', 'settled'))->toBe('raw-settled')
+        ->and(Hooks::render('invoice.html', 'footer'))->toBe('html-footer');
+});
+
+test('one-off processor and renderer exceptions propagate through Laravel access points', function (): void {
+    expect(static fn(): mixed => hooks()->processWith(
+        'invoice.process-failure',
+        static function (): never {
+            throw new DomainException('one-off processor failed');
+        },
+    ))->toThrow(DomainException::class, 'one-off processor failed')
+        ->and(static fn(): mixed => Hooks::renderWith(
+            'invoice.render-failure',
+            static function (): never {
+                throw new DomainException('one-off renderer failed');
+            },
+        ))->toThrow(DomainException::class, 'one-off renderer failed');
 });
 
 test('collect bypasses configured processing', function (): void {

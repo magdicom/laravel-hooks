@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-hooks` will be documented in this file.
 
+## v2.0.0-beta.3 - 2026-09-09
+
+### Changed
+
+- Updated the core dependency requirement to `magdicom/hooks` `^2.0.0-beta.2`.
+- Updated processor and renderer examples and integration fixtures to the core `Magdicom\Processors` namespace.
+- Added Laravel integration coverage for one-off `processWith()` and `renderWith()` calls through the helper and facade, including container resolution, persistent configuration, and exception propagation.
+- Updated the package branding, Laravel usage guidance, lifecycle documentation, and links to the Hooks documentation site.
+
 ## v2.0.0-beta.2 - 2026-09-08
 
 This prerelease corrects the beta installation and packaging guidance. No runtime API or behavior changed from `v2.0.0-beta.1`.

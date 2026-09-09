@@ -8,7 +8,7 @@ The Laravel wrapper now exposes the published `magdicom/hooks` version-2 API dir
 
 - PHP `^8.2`
 - Laravel `^12.0` or `^13.0`
-- `magdicom/hooks` `^2.0.0-beta.1`
+- `magdicom/hooks` `^2.0.0-beta.2`
 
 Laravel 9, 10, and 11 support has been removed from the version-2 branch.
 
@@ -88,8 +88,8 @@ $last = Hooks::last('dashboard.widgets')->toArray();
 Version 2:
 
 ```php
-use Magdicom\Processor\FirstProcessor;
-use Magdicom\Processor\LastProcessor;
+use Magdicom\Processors\FirstProcessor;
+use Magdicom\Processors\LastProcessor;
 
 Hooks::setProcessor('dashboard.first_widget', new FirstProcessor());
 Hooks::setProcessor('dashboard.last_widget', new LastProcessor());
@@ -127,7 +127,7 @@ $html = Hooks::all('menu')->toString("\n");
 Version 2:
 
 ```php
-use Magdicom\Processor\ConcatenateRenderer;
+use Magdicom\Processors\ConcatenateRenderer;
 
 Hooks::setRenderer('menu', new ConcatenateRenderer("\n"));
 
@@ -135,6 +135,19 @@ $html = Hooks::render('menu');
 ```
 
 Custom renderers must implement `Magdicom\Renderer`, or you may provide a callable renderer that returns a string.
+
+## One-Off Processing And Rendering
+
+Use `processWith()` and `renderWith()` when a processor or renderer should apply to one call without changing the endpoint's persistent configuration:
+
+```php
+use Magdicom\Processors\LastProcessor;
+
+$status = hooks()->processWith('invoice.status', new LastProcessor(), $invoiceId);
+$html = hooks()->renderWith('invoice.summary', new InvoiceSummaryRenderer(), $invoiceId);
+```
+
+The same core methods are available through the optional facade. Class-name processors and renderers resolve through Laravel's container, including constructor dependencies.
 
 ## Global Parameter State Removed
 
@@ -241,6 +254,9 @@ Use the core package's version-2 actions, filters, collectors, processors, rende
 
 ## Further Reading
 
+- [Hooks documentation](https://hooks.momagdi.com)
+- [Hooks for Laravel documentation](https://hooks.momagdi.com/docs/2.x/laravel/)
 - [`magdicom/hooks`](https://github.com/magdicom/hooks)
+- [Hooks documentation](https://hooks.momagdi.com)
 - [`magdicom/hooks` 2.0 upgrade guide](https://github.com/magdicom/hooks/blob/2.0/UPGRADE.md)
-- [`magdicom/hooks` v2.0.0-beta.1 release](https://github.com/magdicom/hooks/releases/tag/v2.0.0-beta.1)
+- [`magdicom/hooks` v2.0.0-beta.2 release](https://github.com/magdicom/hooks/releases/tag/v2.0.0-beta.2)

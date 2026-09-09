@@ -12,12 +12,13 @@
         "processors",
         "renderers"
     ],
-    "homepage": "https://github.com/magdicom/laravel-hooks",
+    "homepage": "https://hooks.momagdi.com",
     "license": "MIT",
     "authors": [
         {
             "name": "Mohamed Magdi",
             "email": "m@momagdi.com",
+            "homepage": "https://momagdi.com",
             "role": "Developer"
         }
     ],
@@ -25,7 +26,7 @@
         "php": "^8.2",
         "illuminate/contracts": "^12.0 || ^13.0",
         "illuminate/support": "^12.0 || ^13.0",
-        "magdicom/hooks": "^2.0.0-beta.1"
+        "magdicom/hooks": "^2.0.0-beta.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95",

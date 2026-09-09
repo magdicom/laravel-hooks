@@ -1,14 +1,14 @@
-# Laravel Hooks
+# Hooks for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
 [![Total Downloads](https://img.shields.io/packagist/dt/magdicom/laravel-hooks.svg?style=flat-square)](https://packagist.org/packages/magdicom/laravel-hooks)
 [![CI](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml/badge.svg?branch=2.0)](https://github.com/magdicom/laravel-hooks/actions/workflows/ci.yml?query=branch%3A2.0)
 
-`magdicom/laravel-hooks` is the first-class Laravel integration for the framework-independent [`magdicom/hooks`](https://github.com/magdicom/hooks) core.
+`magdicom/laravel-hooks` is Hooks for Laravel: first-class Laravel integration for the framework-independent [`magdicom/hooks`](https://github.com/magdicom/hooks) core, providing extension points for PHP applications.
 
-Use `hooks()` as the concise application-level access method. Inside services, jobs, and commands, constructor injection of `Magdicom\Hooks` is recommended. The `Hooks` facade is an optional alternative when facade-style access fits the calling code.
+Use `hooks()` as the concise application-level access method. Inside services, jobs, and commands, constructor injection of `Magdicom\Hooks` is recommended. The `Hooks` facade is an optional Laravel convenience when facade-style access fits the calling code.
 
-Laravel's container resolves supported non-static class callbacks, class-name processors, and class-name renderers, including their constructor dependencies. Complete Laravel integration documentation is available at [hooks.momagdi.com/docs/2.x/laravel/](https://hooks.momagdi.com/docs/2.x/laravel/).
+Laravel's container resolves supported non-static class callbacks, class-name processors, and class-name renderers, including their constructor dependencies. Complete documentation is available at [hooks.momagdi.com](https://hooks.momagdi.com), including the [Laravel integration guide](https://hooks.momagdi.com/docs/2.x/laravel/).
 
 Core hook behavior belongs to `magdicom/hooks`: actions, filters, collectors, priorities, registration handles, inspection, removal, result processors, and renderers.
 
@@ -18,7 +18,7 @@ Version 2 is intentionally breaking. If you are upgrading from `1.x`, read [UPGR
 
 - PHP `^8.2`
 - Laravel `^12.0` or `^13.0`
-- `magdicom/hooks` `^2.0.0-beta.1`
+- `magdicom/hooks` `^2.0.0-beta.2`
 
 Laravel 9, 10, and 11 are not supported by this version-2 branch.
 
@@ -61,6 +61,29 @@ Hooks::getFacadeRoot();
 ```
 
 Registrations added through one path are visible through every other path.
+
+Prefer constructor injection in services, jobs, and commands:
+
+```php
+use Magdicom\Hooks;
+
+final readonly class InvoiceNotifier
+{
+    public function __construct(private Hooks $hooks) {}
+
+    public function notify(int $invoiceId): void
+    {
+        $this->hooks->doAction('invoice.paid', $invoiceId);
+    }
+}
+```
+
+For concise application-level calls, use the `hooks()` helper:
+
+```php
+hooks()->doAction('invoice.paid', $invoiceId);
+$label = hooks()->applyFilters('invoice.label', $label, $invoiceId);
+```
 
 The package also binds `Magdicom\Resolver` to `Magdicom\LaravelHooks\LaravelResolver` as a singleton. Applications and packages may replace the `Magdicom\Resolver` binding before `Magdicom\Hooks` is first resolved when they need custom class-name resolution behavior.
 
@@ -174,7 +197,7 @@ Processors finalize collector results while preserving raw `collect()` access.
 
 ```php
 use Magdicom\LaravelHooks\Facades\Hooks;
-use Magdicom\Processor\LastProcessor;
+use Magdicom\Processors\LastProcessor;
 
 Hooks::addCollector('invoice.status', fn (): string => 'draft');
 Hooks::addCollector('invoice.status', fn (): string => 'paid');
@@ -195,7 +218,7 @@ Renderers are string-producing collector processors.
 
 ```php
 use Magdicom\LaravelHooks\Facades\Hooks;
-use Magdicom\Processor\ConcatenateRenderer;
+use Magdicom\Processors\ConcatenateRenderer;
 
 Hooks::addCollector('layout.footer', fn (): string => '<span>Terms</span>');
 Hooks::addCollector('layout.footer', fn (): string => '<span>Privacy</span>');
@@ -208,6 +231,24 @@ $html = Hooks::render('layout.footer');
 Class-name renderers resolve through Laravel's container and must implement `Magdicom\Renderer`.
 
 If you replace the `Magdicom\Resolver` binding before the shared hooks instance is resolved, class-name renderers use that custom resolver.
+
+## One-Off Processing And Rendering
+
+Use `processWith()` or `renderWith()` when a processor or renderer applies to one invocation without replacing the endpoint's persistent configuration:
+
+```php
+use Magdicom\Processors\LastProcessor;
+
+$status = hooks()->processWith('invoice.status', new LastProcessor(), $invoiceId);
+$html = hooks()->renderWith('invoice.summary', new InvoiceSummaryRenderer(), $invoiceId);
+```
+
+The same core methods are available through the optional facade:
+
+```php
+$status = Hooks::processWith('invoice.status', new LastProcessor(), $invoiceId);
+$html = Hooks::renderWith('invoice.summary', new InvoiceSummaryRenderer(), $invoiceId);
+```
 
 ## Registration Handles
 
@@ -243,10 +284,11 @@ Use this package when you need named extension points where packages or applicat
 
 ## Core Package
 
-Read the core package documentation for complete API details:
+Read the complete Hooks documentation for API details and Laravel usage:
 
+- [hooks.momagdi.com](https://hooks.momagdi.com)
 - [`magdicom/hooks`](https://github.com/magdicom/hooks)
-- [`magdicom/hooks` v2.0.0-beta.1 release](https://github.com/magdicom/hooks/releases/tag/v2.0.0-beta.1)
+- [`magdicom/hooks` v2.0.0-beta.2 release](https://github.com/magdicom/hooks/releases/tag/v2.0.0-beta.2)
 
 ## Testing
 
@@ -275,7 +317,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [Mohamed Magdi](https://github.com/magdicom)
+- [Mohamed Magdi](https://momagdi.com)
 
 ## License
 

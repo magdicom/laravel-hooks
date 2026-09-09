@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Magdicom\LaravelHooks\Facades\Hooks;
-use Magdicom\Processor\ConcatenateRenderer;
-use Magdicom\Processor\FirstProcessor;
+use Magdicom\Processors\ConcatenateRenderer;
+use Magdicom\Processors\FirstProcessor;
 use Magdicom\RegistrationHandle;
 
 test('facade exposes action filter collector processor and renderer APIs', function (): void {
